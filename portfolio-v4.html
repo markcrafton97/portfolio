@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mark Crafton — Director</title>
+<style>
+:root {
+  --bg:#FF8F24;
+  --ink:#0a0a0a;
+  --mid:#5a2a00;
+  --border:#d06000;
+  --nav-bg:#FF8F24;
+  --mob-menu-bg:#BA5400;
+  --check-bg:#1C7F9C;
+}
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--ink);
+  -webkit-font-smoothing:antialiased; cursor:none; overflow-x:hidden;
+}
+a,button { cursor:none; color:inherit; text-decoration:none; font-family:inherit; }
+
+/* ═══════════════ CURSOR — TENNIS BALL ═══════════════ */
+#c-ball { position:fixed; pointer-events:none; z-index:10000; top:0; left:0; will-change:transform; }
+
+/*
+  CHECK IT OUT cursor ring
+  110px viewbox, bg circle r=55, text arc r=44
+  circ=276.5px, font 9px sp=0.28em, 34 chars ≈ 263px — fits perfectly
+  bg: #27535E (dark teal as requested)
+*/
+/*
+  CHECK IT OUT cursor ring — 80px, teal bg, single phrase on arc
+  Arc radius 26 in a 80px viewbox → circumference ≈ 163px
+  "CHECK IT OUT ✦" at 7.8px with .18em spacing fits cleanly
+*/
+#c-label-ring {
+  position:fixed; pointer-events:none; z-index:10001;
+  width:80px; height:80px;
+  transform:translate(-50%,-50%); top:0; left:0;
+  opacity:0;
+}
+#c-label-ring svg { width:100%; height:100%; overflow:visible; }
+#c-label-ring .ring-bg { fill:#27535E; }
+#c-label-ring .ring-text {
+  font-size:7.0px; font-weight:900; letter-spacing:.16em; text-transform:uppercase;
+  font-family:'Arial Black','Arial Bold',sans-serif;
+  fill:#fff;
+}
+
+/* ═══════════════ CURTAIN ═══════════════ */
+#curtain { position:fixed; inset:0; z-index:8000; background:var(--ink); transform:translateY(-101%); pointer-events:none; }
+
+/* ═══════════════════════════════════
+   DESKTOP NAV
+═══════════════════════════════════ */
+.nav {
+  position:fixed; top:0; left:0; right:0; z-index:600; height:72px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 52px; background:var(--nav-bg); border-bottom:1.5px solid var(--border);
+}
+.nav-logo {
+  font-size:22px; font-weight:900; letter-spacing:-.02em; text-transform:uppercase;
+  font-family:'Arial Black','Arial Bold',Gadget,sans-serif;
+  display:inline-block; color:var(--ink);
+  transition:font-style .2s, letter-spacing .3s cubic-bezier(.77,0,.18,1);
+}
+.nav-logo:hover { font-style:italic; letter-spacing:.02em; }
+.nav-menu { display:flex; list-style:none; }
+.nav-item { position:relative; padding:8px 22px; }
+.nav-item a {
+  font-size:13px; font-weight:900; letter-spacing:.08em; text-transform:uppercase;
+  font-family:'Arial Black','Arial Bold',Gadget,sans-serif;
+  color:var(--mid); display:block;
+  transition:color .2s, font-style .2s, letter-spacing .25s cubic-bezier(.77,0,.18,1);
+}
+.nav-item:hover a { color:var(--ink); font-style:italic; letter-spacing:.14em; }
+.nav-item::after {
+  content:''; position:absolute; bottom:4px; left:22px; right:22px;
+  height:1.5px; background:var(--ink);
+  transform:scaleX(0); transform-origin:right;
+  transition:transform .35s cubic-bezier(.77,0,.18,1);
+}
+.nav-item:hover::after { transform:scaleX(1); transform-origin:left; }
+
+/* ═══════════════════════════════════
+   FILM REEL HAMBURGER
+   • Desktop: hidden
+   • Mobile ≤768px: fixed top-right, 48px circle
+   • Click spins 180° and opens fullscreen menu
+═══════════════════════════════════ */
+#film-btn {
+  display:none;
+  position:fixed; top:12px; right:16px; z-index:710;
+  width:48px; height:48px; border-radius:50%;
+  background:var(--ink); border:none;
+  align-items:center; justify-content:center;
+  transition:transform .55s cubic-bezier(.77,0,.18,1);
+}
+#film-btn svg { width:30px; height:30px; display:block; }
+#film-btn.open { transform:rotate(180deg); }
+
+/* Mobile fullscreen menu */
+#mob-menu {
+  position:fixed; inset:0; z-index:650;
+  background:var(--mob-menu-bg);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  pointer-events:none; opacity:0;
+  transition:opacity .45s cubic-bezier(.77,0,.18,1);
+}
+#mob-menu.open { opacity:1; pointer-events:all; }
+.mob-link {
+  font-size:clamp(38px,11vw,68px); font-weight:900; text-transform:uppercase;
+  font-family:'Arial Black','Arial Bold',Gadget,sans-serif;
+  /* White text is very readable on #BA5400 */
+  color:rgba(255,255,255,.88); letter-spacing:-.02em; line-height:1.15;
+  padding:14px 0;
+  transform:translateY(32px); opacity:0;
+  transition:transform .5s cubic-bezier(.16,1,.3,1), opacity .4s, color .2s, font-style .2s;
+}
+#mob-menu.open .mob-link { opacity:1; transform:translateY(0); }
+#mob-menu.open .mob-link:nth-child(1){ transition-delay:.08s; }
+#mob-menu.open .mob-link:nth-child(2){ transition-delay:.16s; }
+#mob-menu.open .mob-link:nth-child(3){ transition-delay:.24s; }
+.mob-link:hover { color:#fff; font-style:italic; }
+.mob-eyebrow {
+  position:absolute; bottom:40px; left:0; right:0; text-align:center;
+  font-size:11px; color:rgba(255,255,255,.3); letter-spacing:.12em; text-transform:uppercase;
+  opacity:0; transition:opacity .4s .3s;
+}
+#mob-menu.open .mob-eyebrow { opacity:1; }
+
+/* ═══════════════════════════════════
+   HERO VIDEO
+   Height reduced ~30% from 100vh to ~70vh
+═══════════════════════════════════ */
+.hero-video-wrap {
+  position:relative;
+  width:100%;
+  height:calc(70vh - 72px);
+  min-height:320px;
+  margin-top:72px;
+  overflow:hidden;
+  background:#111;
+  border-bottom:1.5px solid var(--border);
+}
+.hero-tint {
+  position:absolute; inset:0; z-index:2;
+  background:rgba(0,0,0,.40);
+  transition:background .4s;
+  pointer-events:none;
+}
+.hero-video-wrap:hover .hero-tint { background:rgba(0,0,0,.24); }
+.hero-video {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; z-index:1;
+}
+/* Text overlay slot — leave empty for now, add animated text here later */
+.hero-text-slot {
+  position:absolute; inset:0; z-index:4;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  pointer-events:none;
+}
+.hero-play-btn {
+  position:absolute; z-index:5;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  width:80px; height:80px; border-radius:50%;
+  border:2px solid rgba(255,255,255,.5);
+  background:rgba(0,0,0,.22);
+  display:flex; align-items:center; justify-content:center;
+  transition:border-color .2s, background .2s, transform .3s cubic-bezier(.25,1,.5,1);
+}
+.hero-play-btn:hover {
+  border-color:rgba(255,255,255,.95);
+  background:rgba(0,0,0,.45);
+  transform:translate(-50%,-50%) scale(1.08);
+}
+.hero-play-tri {
+  width:0; height:0; border-style:solid;
+  border-width:12px 0 12px 20px;
+  border-color:transparent transparent transparent rgba(255,255,255,.9);
+  margin-left:5px;
+}
+
+/* ═══════════════ FILTER ═══════════════ */
+.filter-bar {
+  display:flex; align-items:center; gap:8px; padding:28px 52px 0;
+  opacity:0; transform:translateY(20px); transition:opacity .7s,transform .7s;
+}
+.filter-bar.in { opacity:1; transform:translateY(0); }
+.filter-label { font-size:12px; color:var(--mid); margin-right:6px; }
+.filter-btn {
+  font-size:10px; font-weight:900; letter-spacing:.08em; text-transform:uppercase;
+  padding:6px 16px; border-radius:999px; border:1.5px solid var(--border);
+  background:transparent; color:var(--mid); transition:all .18s;
+  font-family:'Arial Black',sans-serif;
+}
+.filter-btn:hover { border-color:var(--ink); color:var(--ink); }
+.filter-btn.active { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+
+/* ═══════════════════════════════════
+   PROJECT GRID
+═══════════════════════════════════ */
+.project-grid {
+  display:grid; grid-template-columns:repeat(2,1fr);
+  gap:48px; padding:56px 52px 96px;
+}
+.project-card { position:relative; opacity:0; transform:translateY(24px); transition:opacity .8s,transform .8s; }
+.project-card.in { opacity:1; transform:translateY(0); }
+/* card-thumb bg = --bg so peeled-back edges reveal orange */
+.card-thumb { position:relative; width:100%; aspect-ratio:16/10; background:var(--bg); }
+.card-canvas { display:block; width:100%; height:100%; position:absolute; inset:0; }
+.card-body { padding:14px 0 0; }
+.card-tags { display:flex; gap:4px; margin-bottom:6px; }
+.card-tag { font-size:11px; color:var(--mid); }
+.card-tag+.card-tag::before { content:' · '; margin-right:2px; }
+.card-title {
+  font-size:clamp(15px,1.4vw,20px); font-weight:400; letter-spacing:-.02em; line-height:1.2;
+  background-image:linear-gradient(var(--ink),var(--ink));
+  background-repeat:no-repeat; background-size:0% 1px; background-position:0 100%;
+  transition:background-size .4s cubic-bezier(.77,0,.18,1); display:inline;
+}
+.project-card:hover .card-title { background-size:100% 1px; }
+
+/* ═══════════════ ABOUT ═══════════════ */
+.about {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:80px; padding:120px 52px;
+  border-top:1.5px solid var(--border);
+  border-bottom:1.5px solid var(--border);
+}
+.about-left,.about-right { opacity:0; transform:translateY(24px); transition:opacity .8s,transform .8s; }
+.about-left.in,.about-right.in { opacity:1; transform:translateY(0); }
+/* Left: portrait photo placeholder */
+.about-photo {
+  width:100%; aspect-ratio:3/4;
+  background:#1a0a00;
+  overflow:hidden;
+  position:relative;
+}
+.about-photo img {
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+/* Shown when no img is loaded — placeholder state */
+.about-photo-placeholder {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px;
+  background:#1a0a00;
+}
+.about-photo-placeholder svg { opacity:.25; }
+.about-photo-placeholder p {
+  font-size:11px; color:rgba(255,255,255,.25); letter-spacing:.1em; text-transform:uppercase;
+}
+/* Right: bio area */
+.about-right { display:flex; flex-direction:column; justify-content:center; gap:28px; }
+.about-body { font-size:15px; color:var(--mid); line-height:1.78; font-weight:300; }
+.about-stats { display:flex; gap:48px; padding-top:32px; border-top:1.5px solid var(--border); }
+.stat-n { font-size:clamp(30px,4vw,50px); font-weight:300; letter-spacing:-.04em; line-height:1; }
+.stat-l { font-size:11px; color:var(--mid); margin-top:4px; }
+
+/* ═══════════════ CONTACT ═══════════════ */
+.contact { border-top:1.5px solid var(--border); }
+.contact-grid { display:grid; grid-template-columns:repeat(4,1fr); opacity:0; transform:translateY(24px); transition:opacity .8s,transform .8s; }
+.contact-grid.in { opacity:1; transform:translateY(0); }
+.contact-col { padding:52px; border-right:1.5px solid var(--border); border-bottom:1.5px solid var(--border); }
+.contact-col:last-child { border-right:none; }
+.c-over { font-size:11px; color:var(--mid); letter-spacing:.08em; text-transform:uppercase; margin-bottom:14px; }
+.c-val { font-size:18px; font-weight:400; letter-spacing:-.01em; color:var(--ink); text-decoration:underline; text-underline-offset:4px; transition:color .15s, opacity .15s; display:inline-block; }
+.c-val:hover { opacity:.65; }
+.footer-bar { display:flex; align-items:center; justify-content:space-between; padding:26px 52px; border-top:1.5px solid var(--border); font-size:12px; color:var(--mid); }
+.footer-links { display:flex; gap:24px; }
+.footer-links a,.back-top { color:var(--mid); transition:color .15s; }
+.footer-links a:hover,.back-top:hover { color:var(--ink); }
+
+/* ═══════════════ VIDEO MODAL ═══════════════ */
+.modal-bg { position:fixed; inset:0; z-index:2000; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+.modal-bg.open { pointer-events:all; }
+.modal-scrim { position:absolute; inset:0; background:rgba(0,0,0,0); transition:background .35s; }
+.modal-bg.open .modal-scrim { background:rgba(0,0,0,.92); }
+.modal-box {
+  position:relative; width:min(960px,94vw); aspect-ratio:16/9;
+  background:#111; opacity:0; transform:scale(.94) translateY(20px);
+  transition:opacity .4s,transform .4s; z-index:1;
+  overflow:hidden;
+}
+.modal-bg.open .modal-box { opacity:1; transform:scale(1) translateY(0); }
+.modal-close { position:absolute; top:-36px; right:0; background:none; border:none; color:rgba(255,255,255,.45); font-size:12px; letter-spacing:.08em; text-transform:uppercase; transition:color .15s; }
+.modal-close:hover { color:#fff; }
+/* The iframe fills the modal box completely when inserted */
+.modal-box iframe {
+  position:absolute; inset:0; width:100%; height:100%; border:none;
+}
+.modal-ph { width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; }
+.modal-ph-tri { width:0; height:0; border-style:solid; border-width:16px 0 16px 26px; border-color:transparent transparent transparent rgba(255,255,255,.18); }
+.modal-ph-lbl { font-size:11px; color:rgba(255,255,255,.22); letter-spacing:.12em; text-transform:uppercase; max-width:280px; text-align:center; line-height:1.7; }
+
+/* ═══════════════ RESPONSIVE ═══════════════ */
+@media(max-width:768px) {
+  body { cursor:auto; }
+  #c-ball,#c-label-ring { display:none; }
+  .nav-menu { display:none; }
+  #film-btn { display:flex; }
+  .nav { padding:0 20px; height:64px; }
+  .hero-video-wrap { margin-top:64px; height:52vw; min-height:240px; }
+  .filter-bar { padding:20px 20px 0; flex-wrap:wrap; }
+  .project-grid { grid-template-columns:1fr; gap:36px; padding:40px 20px 72px; }
+  .about { grid-template-columns:1fr; gap:40px; padding:72px 20px; }
+  .about-stats { gap:24px; }
+  .contact-grid { grid-template-columns:1fr 1fr; }
+  .contact-col { padding:28px 20px; }
+  .locs { grid-template-columns:1fr 1fr; }
+  .loc { padding:24px 20px; }
+  .footer-bar { padding:20px; flex-wrap:wrap; gap:12px; }
+}
+@media(max-width:480px) {
+  .contact-grid { grid-template-columns:1fr; }
+  .locs { grid-template-columns:1fr; }
+  .loc { border-right:none; border-bottom:1.5px solid var(--border); }
+}
+</style>
+</head>
+<body>
+
+<!-- Page wipe filter -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0" aria-hidden="true">
+  <defs>
+    <filter id="wipef" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence id="wturb" type="turbulence" baseFrequency="0.012 0.005" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap id="wdisp" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<div id="curtain"></div>
+<canvas id="c-ball" width="40" height="40" style="position:fixed;top:0;left:0;pointer-events:none;z-index:10000;will-change:transform;"></canvas>
+
+<!-- CHECK IT OUT rotating cursor ring -->
+<div id="c-label-ring" aria-hidden="true">
+  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <circle class="ring-bg" cx="40" cy="40" r="40"/>
+    <defs>
+      <!--
+        Arc r=34, circumference = 2π×34 = 213.6px → textLength=214.
+        29 chars forced into 214px = ~7.4px spacing each. Zero overlap.
+      -->
+      <path id="arcPath" d="M 40,40 m -34,0 a 34,34 0 1,1 68,0 a 34,34 0 1,1 -68,0"/>
+    </defs>
+    <g id="textRingGroup">
+      <text class="ring-text">
+        <textPath href="#arcPath" startOffset="0%" textLength="214" lengthAdjust="spacing">CHECK IT OUT ✦ CHECK IT OUT ✦</textPath>
+      </text>
+    </g>
+  </svg>
+</div>
+
+<!-- DESKTOP NAV -->
+<header class="nav" id="top">
+  <a href="#top" class="nav-logo" data-mag=".3">Mark Crafton</a>
+  <nav><ul class="nav-menu">
+    <li class="nav-item" data-mag=".4"><a href="#work">Work</a></li>
+    <li class="nav-item" data-mag=".4"><a href="#about">About</a></li>
+    <li class="nav-item" data-mag=".4"><a href="#contact">Contact</a></li>
+  </ul></nav>
+</header>
+
+<!-- FILM REEL BUTTON (mobile, top-right) -->
+<button id="film-btn" aria-label="Open menu">
+  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="46" stroke="white" stroke-width="3.5"/>
+    <circle cx="50"   cy="20"   r="10" fill="white"/>
+    <circle cx="78.5" cy="38.5" r="10" fill="white"/>
+    <circle cx="67.6" cy="70.4" r="10" fill="white"/>
+    <circle cx="32.4" cy="70.4" r="10" fill="white"/>
+    <circle cx="21.5" cy="38.5" r="10" fill="white"/>
+    <circle cx="50"   cy="50"   r="5"  fill="white"/>
+  </svg>
+</button>
+
+<!-- MOBILE FULLSCREEN MENU (bg: #BA5400) -->
+<div id="mob-menu" aria-hidden="true">
+  <a href="#work"    class="mob-link" onclick="closeMobMenu()">Work</a>
+  <a href="#about"   class="mob-link" onclick="closeMobMenu()">About</a>
+  <a href="#contact" class="mob-link" onclick="closeMobMenu()">Contact</a>
+  <div class="mob-eyebrow">Mark Crafton — Director</div>
+</div>
+
+<!-- HERO VIDEO -->
+<section class="hero-video-wrap" id="heroSection">
+  <!--
+    TO ADD YOUR VIDEO:
+    Replace the src="" below with your video file URL or CDN link.
+    Recommended: upload an MP4 to your server or use a CDN like Cloudinary/Mux.
+    The video loops silently as a background reel.
+    The play button opens the full reel modal.
+  -->
+  <video class="hero-video" id="heroVid"
+    autoplay loop muted playsinline
+    src="">
+  </video>
+  <div class="hero-tint"></div>
+  <!-- ── Text overlay slot — add animated headlines here when ready ── -->
+  <div class="hero-text-slot" id="heroTextSlot"></div>
+  <!-- Play button → opens full reel modal -->
+  <button class="hero-play-btn" onclick="openModal('reel')" aria-label="Watch full reel">
+    <div class="hero-play-tri"></div>
+  </button>
+</section>
+
+<!-- WORK SECTION -->
+<section id="work">
+  <div class="filter-bar" id="filterBar">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="narrative">Narrative</button>
+    <button class="filter-btn" data-filter="commercial">Commercial</button>
+    <button class="filter-btn" data-filter="documentary">Documentary</button>
+  </div>
+
+  <div class="project-grid">
+    <!--
+      HOW TO ADD YOUR OWN THUMBNAILS + VIMEO LINKS:
+      Each card has:
+        data-vimeo="YOUR_VIMEO_ID"   ← the number from your Vimeo URL
+        data-thumb="path/to/thumb.jpg" ← path to your thumbnail image
+
+      The canvas draws a placeholder until you add a real thumbnail.
+      To use a real image, remove the <canvas> and add an <img> instead:
+        <img src="your-thumb.jpg" alt="Project title" style="width:100%;height:100%;object-fit:cover;display:block;">
+
+      See the content guide at the bottom of this file for full instructions.
+    -->
+
+    <div class="project-card" data-cat="narrative" data-project data-vimeo="" data-title="Project Title One">
+      <div class="card-thumb"><canvas class="card-canvas" data-bg="#1a1a2e" data-fg="#e94560" data-shape="circles"></canvas></div>
+      <div class="card-body"><div class="card-tags"><span class="card-tag">Narrative</span><span class="card-tag">2024</span></div><h2 class="card-title">Project title one — your story here</h2></div>
+    </div>
+
+    <div class="project-card" data-cat="commercial" data-project data-vimeo="" data-title="Brand Campaign">
+      <div class="card-thumb"><canvas class="card-canvas" data-bg="#0d1b2a" data-fg="#00b4d8" data-shape="grid"></canvas></div>
+      <div class="card-body"><div class="card-tags"><span class="card-tag">Commercial</span><span class="card-tag">2024</span></div><h2 class="card-title">Brand campaign — Client name</h2></div>
+    </div>
+
+    <div class="project-card" data-cat="documentary" data-project data-vimeo="" data-title="Short Documentary">
+      <div class="card-thumb"><canvas class="card-canvas" data-bg="#1c1c1c" data-fg="#cccccc" data-shape="cross"></canvas></div>
+      <div class="card-body"><div class="card-tags"><span class="card-tag">Documentary</span><span class="card-tag">2024</span></div><h2 class="card-title">Short documentary title</h2></div>
+    </div>
+
+    <div class="project-card" data-cat="narrative" data-project data-vimeo="" data-title="Feature Project">
+      <div class="card-thumb"><canvas class="card-canvas" data-bg="#16213e" data-fg="#f72585" data-shape="triangle"></canvas></div>
+      <div class="card-body"><div class="card-tags"><span class="card-tag">Narrative</span><span class="card-tag">2023</span></div><h2 class="card-title">Feature project — longer title here</h2></div>
+    </div>
+
+    <div class="project-card" data-cat="commercial" data-project data-vimeo="" data-title="Product Spot">
+      <div class="card-thumb"><canvas class="card-canvas" data-bg="#0a0a0a" data-fg="#888888" data-shape="halves"></canvas></div>
+      <div class="card-body"><div class="card-tags"><span class="card-tag">Commercial</span><span class="card-tag">2023</span></div><h2 class="card-title">Product spot — Brand name</h2></div>
+    </div>
+
+    <div class="project-card" data-cat="documentary" data-project data-vimeo="" data-title="Long-form Doc">
+      <div class="card-thumb"><canvas class="card-canvas" data-bg="#111111" data-fg="#dddddd" data-shape="rings"></canvas></div>
+      <div class="card-body"><div class="card-tags"><span class="card-tag">Documentary</span><span class="card-tag">2022</span></div><h2 class="card-title">Long-form documentary title</h2></div>
+    </div>
+
+    <div class="project-card" data-cat="narrative" data-project data-vimeo="" data-title="Short Film">
+      <div class="card-thumb"><canvas class="card-canvas" data-bg="#2d1b00" data-fg="#ff9500" data-shape="circles"></canvas></div>
+      <div class="card-body"><div class="card-tags"><span class="card-tag">Narrative</span><span class="card-tag">2023</span></div><h2 class="card-title">Short film — festival title</h2></div>
+    </div>
+
+    <div class="project-card" data-cat="commercial" data-project data-vimeo="" data-title="Tech Campaign">
+      <div class="card-thumb"><canvas class="card-canvas" data-bg="#001a1a" data-fg="#00ffcc" data-shape="grid"></canvas></div>
+      <div class="card-body"><div class="card-tags"><span class="card-tag">Commercial</span><span class="card-tag">2023</span></div><h2 class="card-title">Tech brand campaign — Agency</h2></div>
+    </div>
+
+    <div class="project-card" data-cat="documentary" data-project data-vimeo="" data-title="Music Doc">
+      <div class="card-thumb"><canvas class="card-canvas" data-bg="#1a001a" data-fg="#cc44ff" data-shape="cross"></canvas></div>
+      <div class="card-body"><div class="card-tags"><span class="card-tag">Documentary</span><span class="card-tag">2022</span></div><h2 class="card-title">Music documentary — Artist name</h2></div>
+    </div>
+
+    <div class="project-card" data-cat="narrative" data-project data-vimeo="" data-title="Collaborative Narrative">
+      <div class="card-thumb"><canvas class="card-canvas" data-bg="#001a0a" data-fg="#44ff88" data-shape="triangle"></canvas></div>
+      <div class="card-body"><div class="card-tags"><span class="card-tag">Narrative</span><span class="card-tag">2022</span></div><h2 class="card-title">Collaborative narrative — project</h2></div>
+    </div>
+
+    <div class="project-card" data-cat="commercial" data-project data-vimeo="" data-title="Fashion Campaign">
+      <div class="card-thumb"><canvas class="card-canvas" data-bg="#1a1000" data-fg="#ffdd00" data-shape="halves"></canvas></div>
+      <div class="card-body"><div class="card-tags"><span class="card-tag">Commercial</span><span class="card-tag">2022</span></div><h2 class="card-title">Fashion campaign — House name</h2></div>
+    </div>
+
+    <div class="project-card" data-cat="documentary" data-project data-vimeo="" data-title="Archive Documentary">
+      <div class="card-thumb"><canvas class="card-canvas" data-bg="#0a0a1a" data-fg="#8888ff" data-shape="rings"></canvas></div>
+      <div class="card-body"><div class="card-tags"><span class="card-tag">Documentary</span><span class="card-tag">2021</span></div><h2 class="card-title">Archive documentary — subject</h2></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="about-left">
+    <!--
+      PORTRAIT PHOTO:
+      Replace the placeholder below by adding your image:
+        <img src="your-portrait.jpg" alt="Mark Crafton">
+      Portrait orientation works best (taller than wide).
+      Recommended size: 800×1067px minimum.
+    -->
+    <div class="about-photo">
+      <div class="about-photo-placeholder">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="18" r="9" stroke="white" stroke-width="2"/>
+          <path d="M6 42c0-9.941 8.059-18 18-18s18 8.059 18 18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <p>Add your portrait here</p>
+      </div>
+      <!-- Uncomment and fill in when ready:
+      <img src="your-portrait.jpg" alt="Mark Crafton — Director">
+      -->
+    </div>
+  </div>
+  <div class="about-right">
+    <!--
+      BIO: Replace this placeholder with your text.
+      You can add as many <p> tags as you need.
+    -->
+    <p class="about-body">Add your bio here. Tell your story as a filmmaker — what drives you, what you've made, who you've worked with.<br><br>Based in [Your City]. Available worldwide.</p>
+    <div class="about-stats">
+      <div><div class="stat-n">24</div><div class="stat-l">Projects</div></div>
+      <div><div class="stat-n">8</div><div class="stat-l">Awards</div></div>
+      <div><div class="stat-n">7</div><div class="stat-l">Years</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="contact-grid">
+    <div class="contact-col">
+      <p class="c-over">Say Hello</p>
+      <a href="/cdn-cgi/l/email-protection#86ebe7f4ede5f4e7e0f2e9e8bfb1c6e1ebe7efeaa8e5e9eb" class="c-val"><span class="__cf_email__" data-cfemail="0d606c7f666e7f6c6b796263343a4d6a606c6461236e6260">[email&#160;protected]</span></a>
+    </div>
+    <div class="contact-col">
+      <p class="c-over">Social</p>
+      <a href="https://instagram.com/markcrafton" target="_blank" class="c-val">@markcrafton</a>
+    </div>
+    <div class="contact-col"></div>
+    <div class="contact-col"></div>
+  </div>
+  <footer class="footer-bar">
+    <span>&#169; 2025 Mark Crafton</span>
+    <span class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">Back to top &#8593;</span>
+  </footer>
+</section>
+
+<!-- VIDEO MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal-scrim" onclick="closeModal()"></div>
+  <div class="modal-box" id="modalBox">
+    <button class="modal-close" onclick="closeModal()">&#10005; Close</button>
+    <div class="modal-ph" id="modalPh">
+      <div class="modal-ph-tri"></div>
+      <p class="modal-ph-lbl">Add your Vimeo or YouTube embed URL to data-vimeo on each project card</p>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+(function(){
+'use strict';
+
+/* ══════════════════════════════════════════
+   PLACEHOLDER ART
+══════════════════════════════════════════ */
+function createPlaceholder(W,H,bg,fg,shape){
+  var oc=document.createElement('canvas');
+  oc.width=W; oc.height=H;
+  var c=oc.getContext('2d');
+  c.fillStyle=bg; c.fillRect(0,0,W,H);
+  c.strokeStyle=fg; c.fillStyle=fg;
+  if(shape==='circles'){
+    c.globalAlpha=0.38;
+    [140,100,60,28].forEach(function(r){c.beginPath();c.arc(W/2,H*0.46,r,0,Math.PI*2);c.lineWidth=1.6;c.stroke();});
+  } else if(shape==='grid'){
+    c.globalAlpha=0.22;
+    for(var x=0;x<W;x+=58){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.lineWidth=0.8;c.stroke();}
+    for(var y=0;y<H;y+=58){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.lineWidth=0.8;c.stroke();}
+    c.globalAlpha=0.55;c.lineWidth=2;c.strokeRect(W*0.22,H*0.18,W*0.56,H*0.64);
+  } else if(shape==='cross'){
+    c.globalAlpha=0.14;c.lineWidth=1;
+    c.beginPath();c.moveTo(0,0);c.lineTo(W,H);c.stroke();
+    c.beginPath();c.moveTo(W,0);c.lineTo(0,H);c.stroke();
+    c.globalAlpha=0.22;
+    c.beginPath();c.arc(W/2,H/2,H*0.34,0,Math.PI*2);c.lineWidth=1.2;c.stroke();
+    c.beginPath();c.arc(W/2,H/2,H*0.16,0,Math.PI*2);c.stroke();
+  } else if(shape==='triangle'){
+    c.globalAlpha=0.28;c.lineWidth=1.5;
+    c.beginPath();c.moveTo(W/2,H*0.12);c.lineTo(W*0.88,H*0.88);c.lineTo(W*0.12,H*0.88);c.closePath();c.stroke();
+    c.globalAlpha=0.14;c.beginPath();c.arc(W/2,H*0.58,48,0,Math.PI*2);c.fill();
+  } else if(shape==='halves'){
+    c.globalAlpha=0.85;
+    c.fillRect(W*0.15,H*0.22,W*0.28,H*0.56);
+    c.fillRect(W*0.57,H*0.22,W*0.28,H*0.56);
+  } else {
+    c.globalAlpha=0.22;c.lineWidth=1;
+    [[0.2,0.5],[0.5,0.5],[0.8,0.5]].forEach(function(p){
+      c.beginPath();c.arc(W*p[0],H*p[1],64,0,Math.PI*2);c.stroke();
+      c.beginPath();c.arc(W*p[0],H*p[1],36,0,Math.PI*2);c.stroke();
+    });
+  }
+  c.globalAlpha=1;
+  return oc;
+}
+
+/* ══════════════════════════════════════════
+   ELASTIC IMAGE — SPRING PHYSICS CLIP
+   Physics tuning:
+   • MOUSE_R = 130px (lower as requested)
+   • Quintic falloff (t^5) — softer than cubic,
+     builds very gradually from the influence edge
+     so rounding is barely perceptible at range
+     and smooth near cursor. Softest possible.
+   • N_EDGE = 16 for smooth corners
+   • Global mouse tracking: cursor between 4 cards
+     pulls nearest corner of all of them
+══════════════════════════════════════════ */
+var N_EDGE    = 16;
+var VISCOSITY = 14;
+var DAMPING   = 0.16;
+var MOUSE_R   = 130;
+var MOUSE_F   = 0.40;
+
+var allCards = [];
+
+document.querySelectorAll('[data-project]').forEach(function(card){
+  var thumb  = card.querySelector('.card-thumb');
+  var canvas = card.querySelector('.card-canvas');
+  if(!canvas) return;
+  var ctx    = canvas.getContext('2d');
+  var bg     = canvas.dataset.bg    || '#111';
+  var fg     = canvas.dataset.fg    || '#fff';
+  var shape  = canvas.dataset.shape || 'circles';
+
+  var W=0,H=0,pts=[],img=null,rafId=null;
+  var mouseX=-9999,mouseY=-9999;
+
+  function buildPoints(w,h){
+    pts=[];
+    var n=N_EDGE;
+    for(var i=0;i<=n;i++){var t=i/n;pts.push({ix:t*w,iy:0,x:t*w,y:0,vx:0,vy:0});}
+    for(var i=1;i<=n;i++){var t=i/n;pts.push({ix:w,iy:t*h,x:w,y:t*h,vx:0,vy:0});}
+    for(var i=1;i<=n;i++){var t=i/n;pts.push({ix:w-t*w,iy:h,x:w-t*w,y:h,vx:0,vy:0});}
+    for(var i=1;i<n;i++){var t=i/n;pts.push({ix:0,iy:h-t*h,x:0,y:h-t*h,vx:0,vy:0});}
+  }
+
+  function resize(){
+    W=thumb.offsetWidth; H=thumb.offsetHeight;
+    if(!W||!H) return;
+    canvas.width=W; canvas.height=H;
+    buildPoints(W,H);
+    img=createPlaceholder(W,H,bg,fg,shape);
+    draw();
+  }
+  resize();
+  new ResizeObserver(resize).observe(thumb);
+
+  function tick(){
+    rafId=null;
+    var moving=false;
+    var inRange=(mouseX>-MOUSE_R&&mouseX<W+MOUSE_R&&mouseY>-MOUSE_R&&mouseY<H+MOUSE_R);
+    for(var i=0;i<pts.length;i++){
+      var p=pts[i];
+      if(inRange){
+        var dx=mouseX-p.x, dy=mouseY-p.y;
+        var dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<MOUSE_R&&dist>0.1){
+          /* Quintic falloff: t^5 — the softest possible transition.
+             Effect is essentially invisible until very close,
+             then ramps gently. No harsh edges in the influence zone. */
+          var t=1-dist/MOUSE_R;
+          var force=t*t*t*t*t*MOUSE_F;
+          p.vx-=dx*force;
+          p.vy-=dy*force;
+        }
+      }
+      p.vx+=(p.ix-p.x)/VISCOSITY;
+      p.vy+=(p.iy-p.y)/VISCOSITY;
+      p.vx*=(1-DAMPING); p.vy*=(1-DAMPING);
+      p.x+=p.vx; p.y+=p.vy;
+      if(Math.abs(p.x-p.ix)+Math.abs(p.y-p.iy)>0.04||Math.abs(p.vx)+Math.abs(p.vy)>0.04) moving=true;
+    }
+    draw();
+    if(moving||inRange) rafId=requestAnimationFrame(tick);
+  }
+
+  function draw(){
+    if(!img||!W||!H) return;
+    ctx.clearRect(0,0,W,H);
+    ctx.save();
+    ctx.beginPath();
+    var n=pts.length;
+    var s=mid(pts[n-1],pts[0]);
+    ctx.moveTo(s.x,s.y);
+    for(var i=0;i<n;i++){
+      var m=mid(pts[i],pts[(i+1)%n]);
+      ctx.quadraticCurveTo(pts[i].x,pts[i].y,m.x,m.y);
+    }
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(img,0,0,W,H);
+    ctx.restore();
+  }
+
+  function mid(a,b){return{x:(a.x+b.x)/2,y:(a.y+b.y)/2};}
+
+  allCards.push({canvas:canvas,setMouse:function(x,y){
+    mouseX=x; mouseY=y;
+    if(!rafId) rafId=requestAnimationFrame(tick);
+  }});
+});
+
+document.addEventListener('mousemove',function(e){
+  allCards.forEach(function(c){
+    var r=c.canvas.getBoundingClientRect();
+    c.setMouse(e.clientX-r.left,e.clientY-r.top);
+  });
+});
+
+/* ══════════════════════════════════════════
+   MAGNETIC NAV
+══════════════════════════════════════════ */
+document.querySelectorAll('[data-mag]').forEach(function(el){
+  var s=parseFloat(el.dataset.mag)||0.3;
+  el.addEventListener('mousemove',function(e){
+    var r=el.getBoundingClientRect();
+    el.style.transform='translate('+((e.clientX-r.left-r.width/2)*s)+'px,'+((e.clientY-r.top-r.height/2)*s)+'px)';
+  });
+  el.addEventListener('mouseleave',function(){
+    var cx=parseFloat((el.style.transform.match(/translate\(([^,]+)/)||[])[1])||0;
+    var cy=parseFloat((el.style.transform.match(/,([^)]+)/)||[])[1])||0;
+    var vx=0,vy=0;
+    (function sp(){
+      vx=(vx-cx*.25)*.65;cx+=vx;vy=(vy-cy*.25)*.65;cy+=vy;
+      el.style.transform='translate('+cx+'px,'+cy+'px)';
+      if(Math.abs(cx)>.1||Math.abs(cy)>.1)requestAnimationFrame(sp);
+      else el.style.transform='';
+    })();
+  });
+});
+
+/* ══════════════════════════════════════════
+   TENNIS BALL CURSOR — outline style
+   Transparent fill, black stroke outline.
+   Tiny when still (r≈5), grows when moving.
+   Correct seam: two S-curves bulging to sides,
+   matching the real tennis ball pattern.
+══════════════════════════════════════════ */
+var ballCanvas = document.getElementById('c-ball');
+var ballCtx    = ballCanvas && ballCanvas.getContext('2d');
+var labelRing  = document.getElementById('c-label-ring');
+var textGroup  = document.getElementById('textRingGroup');
+var isTouch    = window.matchMedia('(hover:none)').matches;
+
+if(!isTouch && ballCtx){
+  var mx=-300, my=-300;
+  var bx=-300, by=-300, bvx=0, bvy=0;
+  var scaleX=1, scaleY=1, tScX=1, tScY=1;
+  var spinAngle=0, spinVel=0;  // topspin rotation
+  // Size: starts tiny when still, grows with movement
+  var curR=5, targetR=5;
+  var STILL_R   = 5;   // radius when mouse is stationary
+  var MOVE_R    = 18;  // radius when moving at normal pace
+  var PROJECT_R = 30;  // radius over project card centers
+  var LINK_R    = 5;   // radius over links
+  var GRAVITY   = 0.55;  // much stronger — droops visibly behind fast movement
+  var labelO=0, tLO=0, textAngle=0;
+  var DEG_PER_FRAME = 360/(8*60);
+  var cmode='default', CENTER_ZONE=0.26;
+  var squashT=0;
+  var pmx=-300, pmy=-300, velX=0, velY=0, speed=0;
+  var smoothSpeed=0;
+
+  var CANVAS_MAX=80;
+  ballCanvas.width=CANVAS_MAX; ballCanvas.height=CANVAS_MAX;
+  ballCanvas.style.width=CANVAS_MAX+'px'; ballCanvas.style.height=CANVAS_MAX+'px';
+
+  function drawBall(ctx, r, sx, sy, squash, spin){
+    var cx=CANVAS_MAX/2, cy=CANVAS_MAX/2;
+    ctx.clearRect(0,0,CANVAS_MAX,CANVAS_MAX);
+    if(r<0.8) return;
+    ctx.save();
+    ctx.translate(cx,cy);
+
+    // Amplified squash/stretch for dramatic gravity feel
+    var sxT = sx*(1+Math.max(0,squash)*0.50);
+    var syT = sy*(1-Math.max(0,squash)*0.42);
+    ctx.scale(sxT,syT);
+
+    var lw = Math.max(0.8, r*0.055);
+    ctx.strokeStyle = 'rgba(0,0,0,0.90)';
+    ctx.lineWidth = lw;
+    ctx.lineCap = 'round';
+
+    // ── TENNIS BALL — exact path data from uploaded tennis_ball.svg ─────
+    // SVG viewBox 0 0 118.9 118.9, center(59.45,59.45), radius 58.95
+    // Left seam:  M21.25,14.55 s36.97,40.36,0,90
+    // Right seam: M97.55,14.55 s-45.18,47.52,-1.17,90
+    // Normalized to unit circle then multiplied by r:
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.rotate(spin); // spin the seam pattern inside the circle
+
+    // LEFT seam — exact from SVG
+    ctx.beginPath();
+    ctx.moveTo(r * -0.6480, r * -0.7617);
+    ctx.bezierCurveTo(
+      r * -0.6480, r * -0.7617,   // cp1 = start (s-command after M)
+      r * -0.0209, r * -0.0770,   // cp2
+      r * -0.6480, r *  0.7651    // end
+    );
+    ctx.stroke();
+
+    // RIGHT seam — exact from SVG
+    ctx.beginPath();
+    ctx.moveTo(r *  0.6463, r * -0.7617);
+    ctx.bezierCurveTo(
+      r *  0.6463, r * -0.7617,   // cp1 = start
+      r * -0.1201, r *  0.0444,   // cp2
+      r *  0.6265, r *  0.7651    // end
+    );
+    ctx.stroke();
+
+    ctx.restore();
+
+    // Outer circle
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  document.addEventListener('mousemove',function(e){
+    mx=e.clientX; my=e.clientY;
+    var inCenter=false;
+    document.querySelectorAll('[data-project] .card-canvas').forEach(function(cv){
+      var r=cv.getBoundingClientRect();
+      var rx=(e.clientX-r.left)/r.width-0.5;
+      var ry=(e.clientY-r.top)/r.height-0.5;
+      if(Math.abs(rx)<CENTER_ZONE&&Math.abs(ry)<CENTER_ZONE) inCenter=true;
+    });
+    if(inCenter){if(cmode!=='link') cmode='project';}
+    else if(cmode==='project') cmode='default';
+  });
+
+  document.querySelectorAll('a,button,.filter-btn,.back-top').forEach(function(el){
+    if(!el.closest('[data-project]')){
+      el.addEventListener('mouseenter',function(){cmode='link';});
+      el.addEventListener('mouseleave',function(){cmode='default';});
+    }
+  });
+
+  document.addEventListener('mouseleave',function(){ballCanvas.style.opacity='0';});
+  document.addEventListener('mouseenter',function(){ballCanvas.style.opacity='1';});
+  document.addEventListener('mousedown',function(){squashT=1.0;});
+
+  (function loop(){
+    requestAnimationFrame(loop);
+
+    velX=mx-pmx; velY=my-pmy; pmx=mx; pmy=my;
+    speed=Math.sqrt(velX*velX+velY*velY);
+    smoothSpeed=smoothSpeed*0.85+speed*0.15;
+
+    // Spring toward mouse — very tight/springy with lots of overshoot
+    bvx=(bvx+(mx-bx)*0.28)*0.60;
+    bvy=(bvy+(my-by)*0.28+GRAVITY)*0.60;
+    bx+=bvx; by+=bvy;
+
+    // Size: tiny when still, grows with movement speed
+    if(cmode==='project') targetR=PROJECT_R;
+    else if(cmode==='link') targetR=LINK_R;
+    else {
+      var t=Math.min(smoothSpeed/10,1);
+      targetR=STILL_R+(MOVE_R-STILL_R)*t;
+    }
+    curR+=(targetR-curR)*0.10;
+
+    // Squish — very strong, responds in all directions equally
+    var velStretch=Math.min(speed*0.040,0.70);
+    var ang=Math.atan2(velY,velX);
+    var hF=Math.abs(Math.cos(ang)), vF=Math.abs(Math.sin(ang));
+    tScX=1+velStretch*hF-velStretch*vF*0.7;
+    tScY=1+velStretch*vF-velStretch*hF*0.7;
+    scaleX+=(tScX-scaleX)*0.20;
+    scaleY+=(tScY-scaleY)*0.20;
+    squashT*=0.78;
+
+    // Topspin — target angular velocity proportional to cursor speed.
+    // High acceleration (0.35) and high drag (0.72) = snaps up and down fast.
+    // Direction: positive x-velocity spins clockwise (natural topspin feel).
+    var targetSpin = velX * 0.18;  // scale px/frame → rad/frame
+    spinVel = (spinVel + (targetSpin - spinVel) * 0.35) * 0.72;
+    spinAngle += spinVel;
+
+    var offset=CANVAS_MAX/2;
+    ballCanvas.style.transform='translate('+(bx-offset)+'px,'+(by-offset)+'px)';
+    drawBall(ballCtx,curR,scaleX,scaleY,squashT,spinAngle);
+
+    tLO=(cmode==='project')?1:0;
+    labelO+=(tLO-labelO)*0.10;
+    if(labelRing){
+      labelRing.style.left=mx+'px';
+      labelRing.style.top=my+'px';
+      labelRing.style.opacity=labelO;
+    }
+    textAngle=(textAngle+DEG_PER_FRAME)%360;
+    if(textGroup) textGroup.setAttribute('transform','rotate('+textAngle+' 40 40)');
+  })();
+}
+
+
+/* ══════════════════════════════════════════
+   FILM REEL MENU (mobile)
+══════════════════════════════════════════ */
+var filmBtn=document.getElementById('film-btn');
+var mobMenu=document.getElementById('mob-menu');
+var mobOpen=false;
+
+filmBtn.addEventListener('click',function(){
+  mobOpen=!mobOpen;
+  filmBtn.classList.toggle('open',mobOpen);
+  mobMenu.classList.toggle('open',mobOpen);
+  mobMenu.setAttribute('aria-hidden',String(!mobOpen));
+  document.body.style.overflow=mobOpen?'hidden':'';
+});
+
+window.closeMobMenu=function(){
+  mobOpen=false;
+  filmBtn.classList.remove('open');
+  mobMenu.classList.remove('open');
+  mobMenu.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+};
+
+/* ══════════════════════════════════════════
+   VIDEO MODAL
+   openModal('reel') → opens showreel
+   openModal(vimeoId) → opens that project
+══════════════════════════════════════════ */
+var modal    = document.getElementById('modal');
+var modalBox = document.getElementById('modalBox');
+var modalPh  = document.getElementById('modalPh');
+
+window.openModal = function(src){
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+
+  // Remove any existing iframe
+  var old=modalBox.querySelector('iframe');
+  if(old) old.remove();
+  if(modalPh) modalPh.style.display='flex';
+
+  if(src && src!=='reel' && src!==''){
+    // src is a Vimeo ID number
+    if(modalPh) modalPh.style.display='none';
+    var iframe=document.createElement('iframe');
+    iframe.src='https://player.vimeo.com/video/'+src+'?autoplay=1&color=ffffff&title=0&byline=0&portrait=0';
+    iframe.allow='autoplay; fullscreen; picture-in-picture';
+    iframe.allowFullscreen=true;
+    modalBox.appendChild(iframe);
+  }
+};
+
+window.closeModal = function(){
+  modal.classList.remove('open');
+  document.body.style.overflow='';
+  // Remove iframe to stop video playing
+  var old=modalBox.querySelector('iframe');
+  if(old) old.remove();
+  if(modalPh) modalPh.style.display='flex';
+};
+
+// Wire up project cards to open their Vimeo video
+document.querySelectorAll('[data-project]').forEach(function(card){
+  card.addEventListener('click',function(e){
+    e.preventDefault();
+    var vimeoId=card.dataset.vimeo;
+    if(vimeoId && vimeoId!==''){
+      openModal(vimeoId);
+    } else {
+      // No Vimeo ID yet — show placeholder modal
+      openModal('');
+    }
+  });
+});
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+
+/* ══════════════════════════════════════════
+   PAGE WIPE CURTAIN (decorative on card click)
+   Plays before modal opens
+══════════════════════════════════════════ */
+var curtain=document.getElementById('curtain');
+var wturb2=document.getElementById('wturb');
+var wdisp2=document.getElementById('wdisp');
+curtain.style.filter='url(#wipef)';
+
+/* ══════════════════════════════════════════
+   SCROLL REVEAL
+══════════════════════════════════════════ */
+var revs=[{el:document.getElementById('filterBar'),delay:0}]
+  .concat(Array.from(document.querySelectorAll('.project-card')).map(function(el,i){return{el:el,delay:i*55};}))
+  .concat([
+    {el:document.querySelector('.about-left'),delay:0},
+    {el:document.querySelector('.about-right'),delay:110},
+    {el:document.querySelector('.contact-grid'),delay:0},
+  ]);
+var io=new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+    if(!entry.isIntersecting) return;
+    var it=revs.find(function(r){return r.el===entry.target;});
+    setTimeout(function(){entry.target.classList.add('in');},it?it.delay:0);
+    io.unobserve(entry.target);
+  });
+},{threshold:.08});
+revs.forEach(function(r){if(r.el) io.observe(r.el);});
+
+/* ══════════════════════════════════════════
+   FILTER
+══════════════════════════════════════════ */
+document.querySelectorAll('.filter-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active');
+    var f=btn.dataset.filter;
+    document.querySelectorAll('.project-card').forEach(function(c){
+      var show=f==='all'||c.dataset.cat===f;
+      c.style.opacity=show?'1':'.12';
+      c.style.pointerEvents=show?'':'none';
+    });
+  });
+});
+
+})();
+</script>
+
+<!--
+═══════════════════════════════════════════════════════════════════
+  CONTENT GUIDE — HOW TO ADD YOUR REAL CONTENT
+  Read this section when you're ready to fill in your work.
+═══════════════════════════════════════════════════════════════════
+
+  1. HERO VIDEO (looping background reel)
+  ─────────────────────────────────────
+  Find the <video> tag near the top of the HTML body.
+  Add your video URL to src="":
+    <video ... src="https://yourcdnorserver.com/reel-loop.mp4">
+  
+  Recommended format: MP4 H.264, 1920×1080, under 15MB for fast load.
+  Good hosting options: Cloudinary (free tier), Backblaze B2, or your own server.
+  Do NOT use Vimeo/YouTube for background video — they block autoplay.
+
+  2. PROJECT THUMBNAILS
+  ─────────────────────────────────────
+  For each project card, replace the <canvas> element with an <img>:
+
+    BEFORE:
+      <div class="card-thumb">
+        <canvas class="card-canvas" data-bg="..." ...></canvas>
+      </div>
+
+    AFTER:
+      <div class="card-thumb" style="overflow:hidden;">
+        <img src="your-thumbnail.jpg" alt="Project title"
+             style="width:100%;height:100%;object-fit:cover;display:block;
+                    transition:transform .9s cubic-bezier(.25,1,.5,1);">
+      </div>
+
+  Note: The elastic spring effect only works on the canvas version.
+  If you want the elastic effect on real photos, let me know and I can
+  add a version that loads an image into the canvas directly.
+
+  Recommended thumbnail size: 1280×800px (16:10 ratio), JPG, under 200KB.
+
+  3. VIMEO EMBED IDs
+  ─────────────────────────────────────
+  For each project card, find the data-vimeo="" attribute.
+  Go to your Vimeo video, copy the URL, e.g.:
+    https://vimeo.com/123456789
+  The ID is the number: 123456789
+  Add it: data-vimeo="123456789"
+
+  When a visitor clicks the card, a modal opens and plays that video
+  via the Vimeo embed player with autoplay. Pressing Escape or clicking
+  outside closes it and stops the video.
+
+  4. WHAT HAPPENS WHEN YOU CLICK A PROJECT CARD
+  ─────────────────────────────────────
+  Currently (no Vimeo ID set): clicking opens the modal with a placeholder.
+  Once you add data-vimeo="123456789": clicking opens the modal and
+  immediately starts playing that Vimeo video at full quality.
+  
+  There is no page navigation — everything stays on one page.
+  The modal is a floating video player that covers the screen.
+  Escape or click outside dismisses it.
+
+  If you later want project DETAIL PAGES (separate pages per project
+  with a description, credits, stills, etc.), that would be a
+  separate build. Let me know and we can add that.
+
+  5. YOUR PORTRAIT
+  ─────────────────────────────────────
+  In the About section, find the .about-photo div.
+  Upload your portrait (3:4 ratio works best) and replace the
+  placeholder comment with:
+    <img src="mark-crafton-portrait.jpg" alt="Mark Crafton">
+  The placeholder will disappear automatically.
+
+  6. UPDATING TEXT
+  ─────────────────────────────────────
+  - Project titles  - Project titles: find <h2 class="card-title"> in each card
+  - Tags: find <span class="card-tag"> in each card
+  - Bio: find <p class="about-body"> in the About section
+  - Stats: find .stat-n and .stat-l pairs
+  - Contact emails: find href="mailto:..." links
+  - Footer links:  - Footer links: find .footer-links section
+
+═══════════════════════════════════════════════════════════════════
+-->
+</body>
+</html>
